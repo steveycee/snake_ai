@@ -4,7 +4,23 @@ const scoreEl = document.getElementById('score');
 const startBtn = document.getElementById('start');
 
 const gridSize = 20; // 20x20 cells
-const tileSize = canvas.width / gridSize;
+let tileSize; // computed from canvas pixel size
+const controlsEl = document.getElementById('controls');
+
+function resizeCanvas(){
+  const displaySize = Math.min(window.innerWidth * 0.9, 360);
+  const dpr = window.devicePixelRatio || 1;
+  canvas.style.width = displaySize + 'px';
+  canvas.style.height = displaySize + 'px';
+  canvas.width = Math.floor(displaySize * dpr);
+  canvas.height = Math.floor(displaySize * dpr);
+  tileSize = canvas.width / gridSize;
+  ctx.imageSmoothingEnabled = false;
+}
+
+function isMobile(){
+  return ('ontouchstart' in window) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) || /Mobi|Android/i.test(navigator.userAgent);
+}
 
 let snake, dir, food, score, running, lastMoveTime, speed;
 
@@ -105,8 +121,37 @@ window.addEventListener('keydown', e=>{
   if((key === 'ArrowRight' || key === 'd') && dir.x !== -1) dir = {x:1,y:0};
 });
 
+// setup controls and listeners
+if(controlsEl){
+  controlsEl.querySelectorAll('[data-dir]').forEach(btn=>{
+    const dirName = btn.getAttribute('data-dir');
+    btn.addEventListener('pointerdown', e=>{
+      e.preventDefault();
+      setDirFromControl(dirName);
+    });
+    btn.addEventListener('touchstart', e=>e.preventDefault());
+  });
+  const mobileStart = document.getElementById('mobile-start');
+  if(mobileStart) mobileStart.addEventListener('click', ()=> start());
+}
+
+function setDirFromControl(name){
+  const mapping = { up: {x:0,y:-1}, down: {x:0,y:1}, left: {x:-1,y:0}, right: {x:1,y:0} };
+  const nd = mapping[name];
+  if(!nd) return;
+  if((nd.x === -dir.x && nd.y === -dir.y) && (dir.x !== 0 || dir.y !== 0)) return;
+  dir = nd;
+}
+
 startBtn.addEventListener('click', start);
 
 // initial draw
 init();
+resizeCanvas();
 draw();
+
+// resize handling
+window.addEventListener('resize', ()=>{
+  resizeCanvas();
+  draw();
+});
