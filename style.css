@@ -62,24 +62,21 @@ button {
 /* On-screen mobile controls (hidden on desktop) */
 .controls {
   display: none;
-  flex-direction: column;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
   margin-top: 6px;
 }
-.controls .ctl-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-.controls .secondary-row {
-  justify-content: center;
+.mobile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 68px);
+  grid-template-rows: repeat(3, 68px);
+  gap: 10px;
 }
 .controls .ctl {
-  width: 64px;
-  height: 64px;
+  width: 68px;
+  height: 68px;
   border-radius: 10px;
-  font-size: 22px;
+  font-size: 20px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -87,16 +84,24 @@ button {
   color: #fff;
   border: 1px solid #333;
   touch-action: manipulation;
+  padding: 0;
 }
-.controls .start {
-  width: 84px;
-  font-size: 16px;
+.controls .blank {
+  background: transparent;
+  border: 1px dashed rgba(255,255,255,0.14);
+  color: transparent;
+  pointer-events: none;
 }
+.controls .start,
 .controls .pause {
-  width: 104px;
   font-size: 16px;
 }
 
+/* larger chevrons for direction buttons */
+.controls .ctl.direction {
+  font-size: 28px;
+  line-height: 1;
+}
 @media (max-width: 600px) {
   .button-group {
     display: none;
