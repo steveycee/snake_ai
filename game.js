@@ -3,6 +3,7 @@ const ctx = canvas.getContext('2d');
 const scoreEl = document.getElementById('score');
 const startBtn = document.getElementById('start');
 const pauseBtn = document.getElementById('pause');
+const feedbackEl = document.getElementById('game-feedback');
 
 const gridSize = 20; // 20x20 cells
 let tileSize; // computed from canvas pixel size
@@ -31,6 +32,15 @@ function updatePauseButtonLabel(label){
   if(mobilePauseBtn) mobilePauseBtn.textContent = label;
 }
 
+function showFeedback(show){
+  if(!feedbackEl) return;
+  feedbackEl.classList.toggle('hidden', !show);
+  if(show){
+    const title = feedbackEl.querySelector('.feedback-title');
+    if(title) title.textContent = 'Game Over: Final Score ' + score;
+  }
+}
+
 function init(){
   snake = [{x: Math.floor(gridSize/2), y: Math.floor(gridSize/2)}];
   dir = {x:0,y:0};
@@ -41,6 +51,7 @@ function init(){
   speed = 8; // moves per second
   scoreEl.textContent = 'Score: 0';
   updatePauseButtonLabel('Pause');
+  showFeedback(false);
 }
 
 function placeFood(){
@@ -115,7 +126,7 @@ function update(){
     running = false;
     paused = false;
     updatePauseButtonLabel('Pause');
-    setTimeout(()=> alert('Game over! Score: ' + score), 50);
+    showFeedback(true);
     return;
   }
 
