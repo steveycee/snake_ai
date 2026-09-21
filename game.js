@@ -10,7 +10,10 @@ let tileSize; // computed from canvas pixel size
 const controlsEl = document.getElementById('controls');
 
 function resizeCanvas(){
-  const displaySize = Math.min(window.innerWidth * 0.9, 360);
+  // leave ~5% at top and bottom: use 90% of viewport height
+  const maxByWidth = window.innerWidth * 0.9;
+  const maxByHeight = window.innerHeight * 0.9;
+  const displaySize = Math.min(maxByWidth, maxByHeight, 360);
   const dpr = window.devicePixelRatio || 1;
   canvas.style.width = displaySize + 'px';
   canvas.style.height = displaySize + 'px';
