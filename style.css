@@ -9,16 +9,24 @@
     "Helvetica Neue",
     Arial;
 }
+/* Use dynamic viewport units and safe-area insets to avoid browser chrome and floating footers */
+:root{
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --vspace: calc(10vh + var(--safe-top) + var(--safe-bottom)); /* total reserved vertical space */
+}
+
 body {
   display: flex;
   align-items: flex-start; /* move content up to leave space at bottom */
   justify-content: center;
-  height: 100vh;
+  min-height: 100dvh; /* dynamic viewport height */
   margin: 0;
-  padding-top: 5vh; /* keep ~5% clear at top */
-  padding-bottom: 5vh; /* keep ~5% clear at bottom (e.g., Netlify badge) */
+  padding-top: calc(5vh + var(--safe-top)); /* reserve top safe area */
+  padding-bottom: calc(5vh + var(--safe-bottom)); /* reserve bottom safe area */
   background: #070707;
   color: #eee;
+  box-sizing: border-box;
 }
 .game {
   display: flex;
@@ -31,13 +39,16 @@ body {
 .canvas-wrap {
   position: relative;
   display: inline-block; /* shrink-wrap to canvas size */
+  /* make the canvas-wrap size responsive to the viewport while leaving reserved vertical space */
+  width: min(360px, 90vw, calc(100dvh - var(--vspace)));
 }/* Responsive, square canvas that fits small viewports */
 canvas {
   background: #000;
   border: 4px solid #222;
   image-rendering: pixelated;
-  width: min(360px, 90vw, 90vh);
-  height: min(360px, 90vw, 90vh);
+  /* size is driven by the canvas-wrap width and kept square via aspect-ratio */
+  width: 100%;
+  aspect-ratio: 1 / 1;
   display: block;
 }
 .hud {
@@ -102,7 +113,8 @@ button {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-template-rows: repeat(3, minmax(0, 1fr));
   gap: 12px;
-  width: min(90vw, 360px);
+  /* match the canvas-wrap width so controls align with the canvas */
+  width: min(360px, 90vw, calc(100dvh - var(--vspace)));
 }
 .controls .ctl {
   width: 100%;

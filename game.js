@@ -10,15 +10,16 @@ let tileSize; // computed from canvas pixel size
 const controlsEl = document.getElementById('controls');
 
 function resizeCanvas(){
-  // leave ~5% at top and bottom: use 90% of viewport height
-  const maxByWidth = window.innerWidth * 0.9;
-  const maxByHeight = window.innerHeight * 0.9;
-  const displaySize = Math.min(maxByWidth, maxByHeight, 360);
+  // Use the rendered CSS size so we respect safe-area and layout.
+  const rect = canvas.getBoundingClientRect();
+  const displaySize = Math.max(0, Math.floor(rect.width));
   const dpr = window.devicePixelRatio || 1;
-  canvas.style.width = displaySize + 'px';
-  canvas.style.height = displaySize + 'px';
+  // size backing canvas in device pixels
   canvas.width = Math.floor(displaySize * dpr);
   canvas.height = Math.floor(displaySize * dpr);
+  // ensure the canvas CSS width remains the layout width (keep aspect ratio via CSS)
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = rect.width + 'px';
   tileSize = canvas.width / gridSize;
   ctx.imageSmoothingEnabled = false;
 }
