@@ -2,6 +2,7 @@ const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const scoreEl = document.getElementById('score');
 const startBtn = document.getElementById('start');
+const pauseBtn = document.getElementById('pause');
 
 const gridSize = 20; // 20x20 cells
 let tileSize; // computed from canvas pixel size
@@ -22,7 +23,13 @@ function isMobile(){
   return ('ontouchstart' in window) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) || /Mobi|Android/i.test(navigator.userAgent);
 }
 
-let snake, dir, food, score, running, lastMoveTime, speed;
+let snake, dir, food, score, running, paused, lastMoveTime, speed;
+
+function updatePauseButtonLabel(label){
+  if(pauseBtn) pauseBtn.textContent = label;
+  const mobilePauseBtn = document.getElementById('mobile-pause');
+  if(mobilePauseBtn) mobilePauseBtn.textContent = label;
+}
 
 function init(){
   snake = [{x: Math.floor(gridSize/2), y: Math.floor(gridSize/2)}];
@@ -30,8 +37,10 @@ function init(){
   placeFood();
   score = 0;
   running = false;
+  paused = false;
   speed = 8; // moves per second
   scoreEl.textContent = 'Score: 0';
+  updatePauseButtonLabel('Pause');
 }
 
 function placeFood(){
@@ -41,11 +50,44 @@ function placeFood(){
 }
 
 function start(){
+  if(paused){
+    running = true;
+    paused = false;
+    updatePauseButtonLabel('Pause');
+    lastMoveTime = 0;
+    window.requestAnimationFrame(loop);
+    return;
+  }
+
   init();
   dir = {x:1,y:0};
   running = true;
+  paused = false;
   lastMoveTime = 0;
+  updatePauseButtonLabel('Pause');
   window.requestAnimationFrame(loop);
+}
+
+function togglePause(){
+  if(!snake) return;
+
+  if(running){
+    running = false;
+    paused = true;
+    updatePauseButtonLabel('Resume');
+    return;
+  }
+
+  if(paused){
+    running = true;
+    paused = false;
+    updatePauseButtonLabel('Pause');
+    lastMoveTime = 0;
+    window.requestAnimationFrame(loop);
+    return;
+  }
+
+  start();
 }
 
 function loop(timestamp){
@@ -71,6 +113,8 @@ function update(){
   // collision with self
   if(snake.some(s => s.x === head.x && s.y === head.y)){
     running = false;
+    paused = false;
+    updatePauseButtonLabel('Pause');
     setTimeout(()=> alert('Game over! Score: ' + score), 50);
     return;
   }
@@ -133,6 +177,9 @@ if(controlsEl){
   });
   const mobileStart = document.getElementById('mobile-start');
   if(mobileStart) mobileStart.addEventListener('click', ()=> start());
+
+  const mobilePause = document.getElementById('mobile-pause');
+  if(mobilePause) mobilePause.addEventListener('click', togglePause);
 }
 
 function setDirFromControl(name){
@@ -144,6 +191,7 @@ function setDirFromControl(name){
 }
 
 startBtn.addEventListener('click', start);
+pauseBtn.addEventListener('click', togglePause);
 
 // initial draw
 init();
