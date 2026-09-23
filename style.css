@@ -162,6 +162,21 @@ button {
   font-size: 16px;
 }
 
+.controls .ctl.boost {
+  font-size: 18px;
+  font-weight: 700;
+  background: #1f1f1f;
+  border-color: #666;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.controls .ctl.boost.active {
+  background: linear-gradient(180deg, #4ec3ff 0%, #1b86d5 100%);
+  border-color: #9cd9ff;
+  box-shadow: 0 0 0 2px rgba(90, 194, 255, 0.35), inset 0 0 12px rgba(255,255,255,0.2);
+  transform: translateY(-1px);
+}
+
 /* larger chevrons for direction buttons */
 .controls .ctl.direction {
   font-size: 32px; /* slightly larger since controls grew */

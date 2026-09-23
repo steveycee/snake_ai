@@ -33,12 +33,35 @@ function isMobile() {
   );
 }
 
-let snake, dir, food, score, running, paused, lastMoveTime, speed;
+let snake, dir, food, score, running, paused, lastMoveTime, speed, boostActive, prevSpeed;
 
 function updatePauseButtonLabel(label) {
   if (pauseBtn) pauseBtn.textContent = label;
   const mobilePauseBtn = document.getElementById("mobile-pause");
   if (mobilePauseBtn) mobilePauseBtn.textContent = label;
+}
+
+function updateBoostButtonState(){
+  const b = document.getElementById('mobile-boost');
+  if(!b) return;
+  b.setAttribute('aria-pressed', boostActive ? 'true' : 'false');
+  b.textContent = boostActive ? 'Boosted' : 'Q';
+  b.classList.toggle('active', !!boostActive);
+}
+
+function toggleBoost(){
+  if(!snake) return; // nothing to do if game not initialized
+  if(!boostActive){
+    prevSpeed = speed;
+    speed = speed + 2;
+    boostActive = true;
+  } else {
+    speed = (typeof prevSpeed === 'number') ? prevSpeed : Math.max(1, speed - 2);
+    prevSpeed = null;
+    boostActive = false;
+  }
+  updateBoostButtonState();
+  updateDebug();
 }
 
 function showFeedback(show) {
@@ -71,8 +94,11 @@ function init() {
   running = false;
   paused = false;
   speed = 8; // moves per second
+  boostActive = false;
+  prevSpeed = null;
   scoreEl.textContent = "Score: 0";
   updatePauseButtonLabel("Pause");
+  updateBoostButtonState();
   showFeedback(false);
   updateDebug();
 }
@@ -191,7 +217,8 @@ function draw() {
 
   // snake
   snake.forEach((s, i) => {
-    ctx.fillStyle = i === 0 ? "#7CFC00" : "#32CD32";
+    const headBoost = boostActive && i === 0;
+    ctx.fillStyle = headBoost ? "#8ad8ff" : i === 0 ? "#7CFC00" : "#32CD32";
     ctx.fillRect(s.x * tileSize, s.y * tileSize, tileSize - 1, tileSize - 1);
   });
 
@@ -213,6 +240,13 @@ window.addEventListener("keydown", (e) => {
   if (key === " " || key === "Spacebar" || e.code === "Space") {
     e.preventDefault();
     togglePause();
+    return;
+  }
+
+  // Q toggles boost
+  if (key && key.toLowerCase && key.toLowerCase() === 'q'){
+    e.preventDefault();
+    toggleBoost();
     return;
   }
 
@@ -247,6 +281,9 @@ if (controlsEl) {
 
   const mobilePause = document.getElementById("mobile-pause");
   if (mobilePause) mobilePause.addEventListener("click", togglePause);
+
+  const mobileBoost = document.getElementById('mobile-boost');
+  if(mobileBoost) mobileBoost.addEventListener('click', toggleBoost);
 }
 
 function setDirFromControl(name) {
