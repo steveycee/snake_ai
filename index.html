@@ -21,13 +21,7 @@
         </div>
       </div>
 
-      <div class="hud">
-        <div id="score">Score: 0</div>
-        <div class="button-group">
-          <button id="start">Start / Restart</button>
-          <button id="pause">Pause</button>
-        </div>
-      </div>
+      <div class="hud"></div>
 
       <!-- Mobile on-screen controls -->
       <div id="controls" class="controls" aria-hidden="true">
@@ -37,7 +31,7 @@
           <button id="mobile-pause" class="ctl pause" aria-label="Pause">Pause</button>
 
           <button data-dir="left" class="ctl left direction" aria-label="Left">◀</button>
-          <button class="ctl blank" aria-label="Blank" tabindex="-1"></button>
+          <button id="score" class="ctl score" aria-label="Score">Score: 0</button>
           <button data-dir="right" class="ctl right direction" aria-label="Right">▶</button>
 
           <button class="ctl blank" aria-label="Blank" tabindex="-1"></button>

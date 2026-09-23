@@ -64,8 +64,10 @@ function placeFood(){
   } while(snake.some(s => s.x === food.x && s.y === food.y));
 }
 
-function start(){
+function start(initialDir){
+  // If game is paused, resume. If initialDir is provided while paused, use it.
   if(paused){
+    if(initialDir) dir = initialDir;
     running = true;
     paused = false;
     updatePauseButtonLabel('Pause');
@@ -74,8 +76,9 @@ function start(){
     return;
   }
 
+  // fresh start (or after game over)
   init();
-  dir = {x:1,y:0};
+  dir = initialDir || {x:1,y:0};
   running = true;
   paused = false;
   lastMoveTime = 0;
@@ -174,10 +177,26 @@ function draw(){
 // controls
 window.addEventListener('keydown', e=>{
   const key = e.key;
-  if((key === 'ArrowUp' || key === 'w') && dir.y !== 1) dir = {x:0,y:-1};
-  if((key === 'ArrowDown' || key === 's') && dir.y !== -1) dir = {x:0,y:1};
-  if((key === 'ArrowLeft' || key === 'a') && dir.x !== 1) dir = {x:-1,y:0};
-  if((key === 'ArrowRight' || key === 'd') && dir.x !== -1) dir = {x:1,y:0};
+  // Space toggles pause/resume
+  if(key === ' ' || key === 'Spacebar' || e.code === 'Space'){
+    e.preventDefault();
+    togglePause();
+    return;
+  }
+
+  let nd = null;
+  if((key === 'ArrowUp' || key === 'w') && dir.y !== 1) nd = {x:0,y:-1};
+  if((key === 'ArrowDown' || key === 's') && dir.y !== -1) nd = {x:0,y:1};
+  if((key === 'ArrowLeft' || key === 'a') && dir.x !== 1) nd = {x:-1,y:0};
+  if((key === 'ArrowRight' || key === 'd') && dir.x !== -1) nd = {x:1,y:0};
+  if(!nd) return;
+  // If not running or paused, start/resume with this direction
+  if(!running || paused){
+    showFeedback(false);
+    start(nd);
+    return;
+  }
+  dir = nd;
 });
 
 // setup controls and listeners
@@ -201,12 +220,20 @@ function setDirFromControl(name){
   const mapping = { up: {x:0,y:-1}, down: {x:0,y:1}, left: {x:-1,y:0}, right: {x:1,y:0} };
   const nd = mapping[name];
   if(!nd) return;
+  // prevent reversing directly
   if((nd.x === -dir.x && nd.y === -dir.y) && (dir.x !== 0 || dir.y !== 0)) return;
+  // If not running (fresh start or after game over) or paused, start/resume with this direction
+  if(!running || paused){
+    // hide feedback if visible and start with initial direction
+    showFeedback(false);
+    start(nd);
+    return;
+  }
   dir = nd;
 }
 
-startBtn.addEventListener('click', start);
-pauseBtn.addEventListener('click', togglePause);
+if(startBtn) startBtn.addEventListener('click', start);
+if(pauseBtn) pauseBtn.addEventListener('click', togglePause);
 
 // initial draw
 init();

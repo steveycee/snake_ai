@@ -55,11 +55,10 @@ canvas {
   display: flex;
   gap: 12px;
   align-items: center;
+  justify-content: center;
 }
 .button-group {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+  display: none;
 }
 button {
   padding: 8px 12px;
@@ -75,6 +74,13 @@ button {
 }
 #pause {
   min-width: 75px;
+}
+.ctl.score {
+  font-size: 12px;
+  line-height: 1.2;
+  padding: 0 6px;
+  white-space: normal;
+  text-align: center;
 }
 .game-feedback {
   position: absolute;
@@ -103,7 +109,7 @@ button {
 
 /* On-screen mobile controls (hidden on desktop) */
 .controls {
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   margin-top: 0; /* pull controls up closer to the canvas */
@@ -145,16 +151,4 @@ button {
 .controls .ctl.direction {
   font-size: 32px; /* slightly larger since controls grew */
   line-height: 1;
-}
-@media (max-width: 600px) {
-  .button-group {
-    display: none;
-  }
-
-  .controls {
-    display: flex;
-  }
-
-  /* slightly smaller HUD on mobile */
-  .hud { transform: translateY(-6px); }
 }
