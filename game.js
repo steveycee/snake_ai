@@ -4,6 +4,7 @@ const scoreEl = document.getElementById('score');
 const startBtn = document.getElementById('start');
 const pauseBtn = document.getElementById('pause');
 const feedbackEl = document.getElementById('game-feedback');
+const debugEl = document.getElementById('debug');
 
 const gridSize = 20; // 20x20 cells
 let tileSize; // computed from canvas pixel size
@@ -45,6 +46,12 @@ function showFeedback(show){
   }
 }
 
+function updateDebug(){
+  if(!debugEl) return;
+  const length = snake ? snake.length : 0;
+  debugEl.textContent = `Speed: ${speed} Length: ${length}`;
+}
+
 function init(){
   snake = [{x: Math.floor(gridSize/2), y: Math.floor(gridSize/2)}];
   dir = {x:0,y:0};
@@ -56,6 +63,7 @@ function init(){
   scoreEl.textContent = 'Score: 0';
   updatePauseButtonLabel('Pause');
   showFeedback(false);
+  updateDebug();
 }
 
 function placeFood(){
@@ -148,6 +156,8 @@ function update(){
   } else {
     snake.pop();
   }
+  // update debug HUD (length and speed)
+  updateDebug();
 }
 
 function draw(){
