@@ -33,7 +33,7 @@ function isMobile() {
   );
 }
 
-let snake, dir, food, score, running, paused, lastMoveTime, speed, boostActive, prevSpeed;
+let snake, dir, food, score, running, paused, lastMoveTime, speed, boostActive, prevSpeed, gameOver;
 
 function updatePauseButtonLabel(label) {
   if (pauseBtn) pauseBtn.textContent = label;
@@ -41,12 +41,28 @@ function updatePauseButtonLabel(label) {
   if (mobilePauseBtn) mobilePauseBtn.textContent = label;
 }
 
+function updateStartButtonLabel(label) {
+  const mobileStart = document.getElementById("mobile-start");
+  if (mobileStart) mobileStart.textContent = label;
+  if (startBtn) startBtn.textContent = label;
+}
+
+function isBoostAvailable(){
+  return !!snake && !gameOver && (running || paused);
+}
+
 function updateBoostButtonState(){
   const b = document.getElementById('mobile-boost');
   if(!b) return;
+  const label = b.querySelector('.boost-label');
+  const subtext = b.querySelector('.boost-subtext');
+  const available = isBoostAvailable();
   b.setAttribute('aria-pressed', boostActive ? 'true' : 'false');
-  b.textContent = boostActive ? 'Boosted' : 'Q';
+  b.disabled = !available;
+  if(label) label.textContent = 'Q';
+  if(subtext) subtext.textContent = 'Boost';
   b.classList.toggle('active', !!boostActive);
+  b.classList.toggle('disabled', !available);
 }
 
 function toggleBoost(){
@@ -93,11 +109,13 @@ function init() {
   score = 0;
   running = false;
   paused = false;
+  gameOver = false;
   speed = 8; // moves per second
   boostActive = false;
   prevSpeed = null;
   scoreEl.textContent = "Score: 0";
   updatePauseButtonLabel("Pause");
+  updateStartButtonLabel("Start");
   updateBoostButtonState();
   showFeedback(false);
   updateDebug();
@@ -119,7 +137,11 @@ function start(initialDir) {
     if (initialDir) dir = initialDir;
     running = true;
     paused = false;
+    gameOver = false;
     updatePauseButtonLabel("Pause");
+    updateStartButtonLabel("Start");
+    updateBoostButtonState();
+    showFeedback(false);
     lastMoveTime = 0;
     window.requestAnimationFrame(loop);
     return;
@@ -130,13 +152,17 @@ function start(initialDir) {
   dir = initialDir || { x: 1, y: 0 };
   running = true;
   paused = false;
+  gameOver = false;
   lastMoveTime = 0;
   updatePauseButtonLabel("Pause");
+  updateStartButtonLabel("Start");
+  updateBoostButtonState();
+  showFeedback(false);
   window.requestAnimationFrame(loop);
 }
 
 function togglePause() {
-  if (!snake) return;
+  if (!snake || gameOver) return;
 
   if (running) {
     running = false;
@@ -148,6 +174,7 @@ function togglePause() {
   if (paused) {
     running = true;
     paused = false;
+    gameOver = false;
     updatePauseButtonLabel("Pause");
     lastMoveTime = 0;
     window.requestAnimationFrame(loop);
@@ -181,8 +208,20 @@ function update() {
   if (snake.some((s) => s.x === head.x && s.y === head.y)) {
     running = false;
     paused = false;
+    gameOver = true;
+    // reset any active boost so the button returns to its default color
+    if (boostActive) {
+      boostActive = false;
+      if (typeof prevSpeed === 'number') {
+        speed = prevSpeed;
+      }
+      prevSpeed = null;
+    }
+    updateBoostButtonState();
     updatePauseButtonLabel("Pause");
+    updateStartButtonLabel("New Game");
     showFeedback(true);
+    updateDebug();
     return;
   }
 
@@ -217,8 +256,8 @@ function draw() {
 
   // snake
   snake.forEach((s, i) => {
-    const headBoost = boostActive && i === 0;
-    ctx.fillStyle = headBoost ? "#8ad8ff" : i === 0 ? "#7CFC00" : "#32CD32";
+    // entire snake becomes light blue while boost is active
+    ctx.fillStyle = boostActive ? "#8ad8ff" : (i === 0 ? "#7CFC00" : "#32CD32");
     ctx.fillRect(s.x * tileSize, s.y * tileSize, tileSize - 1, tileSize - 1);
   });
 
@@ -236,6 +275,28 @@ function draw() {
 // controls
 window.addEventListener("keydown", (e) => {
   const key = e.key;
+
+  // Prevent accidental restart or resume during game-over feedback
+  if (gameOver && !running && !paused) {
+    if (key === " " || key === "Spacebar" || e.code === "Space") {
+      e.preventDefault();
+      return;
+    }
+    if (key && key.toLowerCase && key.toLowerCase() === "q") {
+      e.preventDefault();
+      return;
+    }
+
+    const isDirectionKey =
+      key === "ArrowUp" || key === "ArrowDown" || key === "ArrowLeft" || key === "ArrowRight" ||
+      key === "w" || key === "a" || key === "s" || key === "d" ||
+      key === "W" || key === "A" || key === "S" || key === "D";
+    if (isDirectionKey) {
+      e.preventDefault();
+      return;
+    }
+  }
+
   // Space toggles pause/resume
   if (key === " " || key === "Spacebar" || e.code === "Space") {
     e.preventDefault();
@@ -244,17 +305,18 @@ window.addEventListener("keydown", (e) => {
   }
 
   // Q toggles boost
-  if (key && key.toLowerCase && key.toLowerCase() === 'q'){
+  if (key && key.toLowerCase && key.toLowerCase() === "q") {
     e.preventDefault();
+    if (!isBoostAvailable()) return;
     toggleBoost();
     return;
   }
 
   let nd = null;
-  if ((key === "ArrowUp" || key === "w") && dir.y !== 1) nd = { x: 0, y: -1 };
-  if ((key === "ArrowDown" || key === "s") && dir.y !== -1) nd = { x: 0, y: 1 };
-  if ((key === "ArrowLeft" || key === "a") && dir.x !== 1) nd = { x: -1, y: 0 };
-  if ((key === "ArrowRight" || key === "d") && dir.x !== -1)
+  if ((key === "ArrowUp" || key === "w" || key === "W") && dir.y !== 1) nd = { x: 0, y: -1 };
+  if ((key === "ArrowDown" || key === "s" || key === "S") && dir.y !== -1) nd = { x: 0, y: 1 };
+  if ((key === "ArrowLeft" || key === "a" || key === "A") && dir.x !== 1) nd = { x: -1, y: 0 };
+  if ((key === "ArrowRight" || key === "d" || key === "D") && dir.x !== -1)
     nd = { x: 1, y: 0 };
   if (!nd) return;
   // If not running or paused, start/resume with this direction
@@ -283,10 +345,17 @@ if (controlsEl) {
   if (mobilePause) mobilePause.addEventListener("click", togglePause);
 
   const mobileBoost = document.getElementById('mobile-boost');
-  if(mobileBoost) mobileBoost.addEventListener('click', toggleBoost);
+  if(mobileBoost) {
+    mobileBoost.addEventListener('click', () => {
+      if (!isBoostAvailable()) return;
+      toggleBoost();
+    });
+  }
 }
 
 function setDirFromControl(name) {
+  if (gameOver) return;
+
   const mapping = {
     up: { x: 0, y: -1 },
     down: { x: 0, y: 1 },
