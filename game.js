@@ -33,7 +33,7 @@ function isMobile() {
   );
 }
 
-let snake, dir, food, score, running, paused, lastMoveTime, speed, boostActive, prevSpeed, gameOver;
+let snake, dir, food, score, running, paused, lastMoveTime, baseSpeed, speed, boostActive, gameOver;
 
 function updatePauseButtonLabel(label) {
   if (pauseBtn) pauseBtn.textContent = label;
@@ -67,13 +67,14 @@ function updateBoostButtonState(){
 
 function toggleBoost(){
   if(!snake) return; // nothing to do if game not initialized
+  const boostPercent = 0.2; // 20% boost
   if(!boostActive){
-    prevSpeed = speed;
-    speed = speed + 2;
+    // activate boost relative to baseSpeed
+    speed = Math.max(1, Math.round(baseSpeed * (1 + boostPercent)));
     boostActive = true;
   } else {
-    speed = (typeof prevSpeed === 'number') ? prevSpeed : Math.max(1, speed - 2);
-    prevSpeed = null;
+    // deactivate boost and restore to baseSpeed
+    speed = baseSpeed;
     boostActive = false;
   }
   updateBoostButtonState();
@@ -110,9 +111,9 @@ function init() {
   running = false;
   paused = false;
   gameOver = false;
-  speed = 8; // moves per second
+  baseSpeed = 8; // moves per second (unboosted)
+  speed = baseSpeed;
   boostActive = false;
-  prevSpeed = null;
   scoreEl.textContent = "Score: 0";
   updatePauseButtonLabel("Pause");
   updateStartButtonLabel("Start");
@@ -212,10 +213,7 @@ function update() {
     // reset any active boost so the button returns to its default color
     if (boostActive) {
       boostActive = false;
-      if (typeof prevSpeed === 'number') {
-        speed = prevSpeed;
-      }
-      prevSpeed = null;
+      speed = baseSpeed;
     }
     updateBoostButtonState();
     updatePauseButtonLabel("Pause");
@@ -233,7 +231,15 @@ function update() {
     score += foodState.points;
     scoreEl.textContent = "Score: " + score;
     placeFood();
-    if (score % 5 === 0) speed += 1; // gradually speed up
+    if (score % 5 === 0) {
+      // increase the base (unboosted) speed and keep boost relative to it
+      baseSpeed += 1;
+      if (boostActive) {
+        speed = Math.max(1, Math.round(baseSpeed * 1.2));
+      } else {
+        speed = baseSpeed;
+      }
+    }
   } else {
     snake.pop();
   }

@@ -10,10 +10,12 @@
     Arial;
 }
 /* Use dynamic viewport units and safe-area insets to avoid browser chrome and floating footers */
-:root{
+:root {
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --vspace: calc(10vh + var(--safe-top) + var(--safe-bottom)); /* total reserved vertical space */
+  --vspace: calc(
+    10vh + var(--safe-top) + var(--safe-bottom)
+  ); /* total reserved vertical space */
 }
 
 body {
@@ -28,6 +30,15 @@ body {
   color: #eee;
   box-sizing: border-box;
 }
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  position: relative; /* allow overlaying feedback relative to game area */
+}
+
 .game {
   display: flex;
   flex-direction: column;
@@ -41,7 +52,7 @@ body {
   display: inline-block; /* shrink-wrap to canvas size */
   /* make the canvas-wrap size responsive to the viewport while leaving reserved vertical space */
   width: min(360px, 90vw, calc(100dvh - var(--vspace)));
-}/* Responsive, square canvas that fits small viewports */
+} /* Responsive, square canvas that fits small viewports */
 canvas {
   background: #000;
   border: 4px solid #222;
@@ -77,11 +88,11 @@ button {
 }
 
 /* Debug overlay top of screen */
-.debug{
+.debug {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   color: #fff;
   padding: 6px 10px;
   border-radius: 8px;
@@ -113,7 +124,8 @@ button {
   gap: 16px;
   z-index: 3;
   text-align: center;
-}.game-feedback.hidden {
+}
+.game-feedback.hidden {
   display: none;
 }
 .feedback-title {
@@ -153,7 +165,7 @@ button {
 }
 .controls .blank {
   background: transparent;
-  border: 1px dashed rgba(255,255,255,0.14);
+  border: 1px dashed rgba(255, 255, 255, 0.14);
   color: transparent;
   pointer-events: none;
 }
@@ -172,7 +184,12 @@ button {
   font-weight: 700;
   background: #1f1f1f;
   border-color: #666;
-  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
 }
 
 .controls .ctl.boost:disabled,
@@ -197,7 +214,9 @@ button {
 .controls .ctl.boost.active {
   background: linear-gradient(180deg, #4ec3ff 0%, #1b86d5 100%);
   border-color: #9cd9ff;
-  box-shadow: 0 0 0 2px rgba(90, 194, 255, 0.35), inset 0 0 12px rgba(255,255,255,0.2);
+  box-shadow:
+    0 0 0 2px rgba(90, 194, 255, 0.35),
+    inset 0 0 12px rgba(255, 255, 255, 0.2);
   transform: translateY(-1px);
 }
 
